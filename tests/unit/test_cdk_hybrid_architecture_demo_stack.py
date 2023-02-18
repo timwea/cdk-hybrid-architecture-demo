@@ -1,13 +1,13 @@
 import aws_cdk as core
 import aws_cdk.assertions as assertions
 
-from cdk_site_to_site_vpn_demo.cdk_site_to_site_vpn_demo_stack import CdkSiteToSiteVpnDemoStack
+from cdk_hybrid_architecture_demo.cdk_hybrid_architecture_demo_stack import CdkHybridArchitectureDemoStack
 
 # example tests. To run these tests, uncomment this file along with the example
-# resource in cdk_site_to_site_vpn_demo/cdk_site_to_site_vpn_demo_stack.py
+# resource in cdk_hybrid_architecture_demo/cdk_hybrid_architecture_demo_stack.py
 def test_sqs_queue_created():
     app = core.App()
-    stack = CdkSiteToSiteVpnDemoStack(app, "cdk-site-to-site-vpn-demo")
+    stack = CdkHybridArchitectureDemoStack(app, "cdk-hybrid-architecture-demo")
     template = assertions.Template.from_stack(stack)
 
 #     template.has_resource_properties("AWS::SQS::Queue", {

@@ -3,11 +3,11 @@ import os
 
 import aws_cdk as cdk
 
-from cdk_site_to_site_vpn_demo.cdk_site_to_site_vpn_demo_stack import CdkSiteToSiteVpnDemoStack
+from cdk_hybrid_architecture_demo.cdk_hybrid_architecture_demo_stack import CdkHybridArchitectureDemoStack
 
 
 app = cdk.App()
-CdkSiteToSiteVpnDemoStack(app, "CdkSiteToSiteVpnDemoStack",
+CdkHybridArchitectureDemoStack(app, "CdkHybridArchitectureDemoStack",
     # If you don't specify 'env', this stack will be environment-agnostic.
     # Account/Region-dependent features and context lookups will not work,
     # but a single synthesized template can be deployed anywhere.
