@@ -1,0 +1,376 @@
+Resources:
+  AWSPrivateNetworkAWSVpcE0F4E4E3:
+    Type: AWS::EC2::VPC
+    Properties:
+      CidrBlock: 10.16.0.0/16
+      EnableDnsHostnames: true
+      EnableDnsSupport: true
+      InstanceTenancy: default
+      Tags:
+        - Key: Name
+          Value: aws-private-network
+    Metadata:
+      aws:cdk:path: CdkHybridArchitectureDemoStack/AWSPrivateNetwork/AWSVpc/Resource
+  AWSPrivateNetworkAWSPrivateSubnetASubnetF4AE8876:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId:
+        Ref: AWSPrivateNetworkAWSVpcE0F4E4E3
+      AvailabilityZone:
+        Fn::Select:
+          - 0
+          - Fn::GetAZs: ""
+      CidrBlock: 10.16.32.0/20
+      MapPublicIpOnLaunch: false
+      Tags:
+        - Key: Name
+          Value: CdkHybridArchitectureDemoStack/AWSPrivateNetwork/AWSPrivateSubnetA/AWSPrivateSubnetA
+    Metadata:
+      aws:cdk:path: CdkHybridArchitectureDemoStack/AWSPrivateNetwork/AWSPrivateSubnetA/AWSPrivateSubnetA/Subnet
+  AWSPrivateNetworkAWSPrivateSubnetBSubnet93A0CDD9:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId:
+        Ref: AWSPrivateNetworkAWSVpcE0F4E4E3
+      AvailabilityZone:
+        Fn::Select:
+          - 1
+          - Fn::GetAZs: ""
+      CidrBlock: 10.16.96.0/20
+      MapPublicIpOnLaunch: false
+      Tags:
+        - Key: Name
+          Value: CdkHybridArchitectureDemoStack/AWSPrivateNetwork/AWSPrivateSubnetB/AWSPrivateSubnetB
+    Metadata:
+      aws:cdk:path: CdkHybridArchitectureDemoStack/AWSPrivateNetwork/AWSPrivateSubnetB/AWSPrivateSubnetB/Subnet
+  AWSPrivateNetworkAWSCustomRouteTable00BABAA7:
+    Type: AWS::EC2::RouteTable
+    Properties:
+      VpcId:
+        Ref: AWSPrivateNetworkAWSVpcE0F4E4E3
+      Tags:
+        - Key: Name
+          Value: aws-private-network-custom_route_table
+    Metadata:
+      aws:cdk:path: CdkHybridArchitectureDemoStack/AWSPrivateNetwork/AWSCustomRouteTable
+  AWSPrivateNetworkAWSTransitGateway560E2AA0:
+    Type: AWS::EC2::TransitGateway
+    Properties:
+      AmazonSideAsn: 64512
+      DefaultRouteTableAssociation: enable
+      Description: Transit Gateway for the AWS private network
+      DnsSupport: enable
+      Tags:
+        - Key: Name
+          Value: aws-private-network-transit-gateway
+      VpnEcmpSupport: enable
+    Metadata:
+      aws:cdk:path: CdkHybridArchitectureDemoStack/AWSPrivateNetwork/AWSTransitGateway
+  AWSPrivateNetworkAWSTGWAttachmentB5A3A77F:
+    Type: AWS::EC2::TransitGatewayAttachment
+    Properties:
+      SubnetIds:
+        - Ref: AWSPrivateNetworkAWSPrivateSubnetASubnetF4AE8876
+        - Ref: AWSPrivateNetworkAWSPrivateSubnetBSubnet93A0CDD9
+      TransitGatewayId:
+        Fn::GetAtt:
+          - AWSPrivateNetworkAWSTransitGateway560E2AA0
+          - Id
+      VpcId:
+        Ref: AWSPrivateNetworkAWSVpcE0F4E4E3
+      Tags:
+        - Key: Name
+          Value: aws-private-network-transit-gateway-attach
+    Metadata:
+      aws:cdk:path: CdkHybridArchitectureDemoStack/AWSPrivateNetwork/AWSTGWAttachment
+  AWSPrivateNetworkAWSTGWDefaultRoute285B58B3:
+    Type: AWS::EC2::Route
+    Properties:
+      RouteTableId:
+        Fn::GetAtt:
+          - AWSPrivateNetworkAWSCustomRouteTable00BABAA7
+          - RouteTableId
+      DestinationCidrBlock: 0.0.0.0/0
+      TransitGatewayId:
+        Fn::GetAtt:
+          - AWSPrivateNetworkAWSTransitGateway560E2AA0
+          - Id
+    DependsOn:
+      - AWSPrivateNetworkAWSTGWAttachmentB5A3A77F
+    Metadata:
+      aws:cdk:path: CdkHybridArchitectureDemoStack/AWSPrivateNetwork/AWSTGWDefaultRoute
+  AWSPrivateNetworkAWSPrivateSubnetARTAssoc31C2F529:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      RouteTableId:
+        Fn::GetAtt:
+          - AWSPrivateNetworkAWSCustomRouteTable00BABAA7
+          - RouteTableId
+      SubnetId:
+        Ref: AWSPrivateNetworkAWSPrivateSubnetASubnetF4AE8876
+    Metadata:
+      aws:cdk:path: CdkHybridArchitectureDemoStack/AWSPrivateNetwork/AWSPrivateSubnetARTAssoc
+  AWSPrivateNetworkAWSPrivateSubnetBRTAssoc96A1B614:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      RouteTableId:
+        Fn::GetAtt:
+          - AWSPrivateNetworkAWSCustomRouteTable00BABAA7
+          - RouteTableId
+      SubnetId:
+        Ref: AWSPrivateNetworkAWSPrivateSubnetBSubnet93A0CDD9
+    Metadata:
+      aws:cdk:path: CdkHybridArchitectureDemoStack/AWSPrivateNetwork/AWSPrivateSubnetBRTAssoc
+  AWSPrivateNetworkAWSEC2SecurityGroupF5CCE5AF:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: AWS private network default security group
+      GroupName: aws-vpc-ec2-sg
+      SecurityGroupEgress:
+        - CidrIp: 0.0.0.0/0
+          Description: Allow all outbound traffic by default
+          IpProtocol: "-1"
+      SecurityGroupIngress:
+        - CidrIp: 0.0.0.0/0
+          Description: Allow SSH IPv4 IN
+          FromPort: 22
+          IpProtocol: tcp
+          ToPort: 22
+        - CidrIp: 192.168.8.0/21
+          Description: Allow ALL from ONPREM Networks
+          IpProtocol: "-1"
+        - CidrIp:
+            Fn::GetAtt:
+              - AWSPrivateNetworkAWSVpcE0F4E4E3
+              - CidrBlock
+          Description:
+            Fn::Join:
+              - ""
+              - - "from "
+                - Fn::GetAtt:
+                    - AWSPrivateNetworkAWSVpcE0F4E4E3
+                    - CidrBlock
+                - :443
+          FromPort: 443
+          IpProtocol: tcp
+          ToPort: 443
+      VpcId:
+        Ref: AWSPrivateNetworkAWSVpcE0F4E4E3
+    Metadata:
+      aws:cdk:path: CdkHybridArchitectureDemoStack/AWSPrivateNetwork/AWSEC2SecurityGroup/Resource
+  AWSPrivateNetworkAWSEC2SecurityGroupSelfReferenceRule941796BD:
+    Type: AWS::EC2::SecurityGroupIngress
+    Properties:
+      IpProtocol: "-1"
+      GroupId:
+        Fn::GetAtt:
+          - AWSPrivateNetworkAWSEC2SecurityGroupF5CCE5AF
+          - GroupId
+      SourceSecurityGroupId:
+        Fn::GetAtt:
+          - AWSPrivateNetworkAWSEC2SecurityGroupF5CCE5AF
+          - GroupId
+    Metadata:
+      aws:cdk:path: CdkHybridArchitectureDemoStack/AWSPrivateNetwork/AWSEC2SecurityGroupSelfReferenceRule
+  AWSPrivateNetworkAWSEC2MessagesInterfaceEndpoint6DE12C0D:
+    Type: AWS::EC2::VPCEndpoint
+    Properties:
+      ServiceName: com.amazonaws.us-east-1.ec2messages
+      VpcId:
+        Ref: AWSPrivateNetworkAWSVpcE0F4E4E3
+      PrivateDnsEnabled: true
+      SecurityGroupIds:
+        - Fn::GetAtt:
+            - AWSPrivateNetworkAWSEC2SecurityGroupF5CCE5AF
+            - GroupId
+      SubnetIds:
+        - Ref: AWSPrivateNetworkAWSPrivateSubnetASubnetF4AE8876
+        - Ref: AWSPrivateNetworkAWSPrivateSubnetBSubnet93A0CDD9
+      VpcEndpointType: Interface
+    Metadata:
+      aws:cdk:path: CdkHybridArchitectureDemoStack/AWSPrivateNetwork/AWSEC2MessagesInterfaceEndpoint/Resource
+  AWSPrivateNetworkAWSSSMMessagesInterfaceEndpoint44B51C7E:
+    Type: AWS::EC2::VPCEndpoint
+    Properties:
+      ServiceName: com.amazonaws.us-east-1.ssmmessages
+      VpcId:
+        Ref: AWSPrivateNetworkAWSVpcE0F4E4E3
+      PrivateDnsEnabled: true
+      SecurityGroupIds:
+        - Fn::GetAtt:
+            - AWSPrivateNetworkAWSEC2SecurityGroupF5CCE5AF
+            - GroupId
+      SubnetIds:
+        - Ref: AWSPrivateNetworkAWSPrivateSubnetASubnetF4AE8876
+        - Ref: AWSPrivateNetworkAWSPrivateSubnetBSubnet93A0CDD9
+      VpcEndpointType: Interface
+    Metadata:
+      aws:cdk:path: CdkHybridArchitectureDemoStack/AWSPrivateNetwork/AWSSSMMessagesInterfaceEndpoint/Resource
+  AWSPrivateNetworkAWSSSMInterfaceEndpoint0D412622:
+    Type: AWS::EC2::VPCEndpoint
+    Properties:
+      ServiceName: com.amazonaws.us-east-1.ssm
+      VpcId:
+        Ref: AWSPrivateNetworkAWSVpcE0F4E4E3
+      PrivateDnsEnabled: true
+      SecurityGroupIds:
+        - Fn::GetAtt:
+            - AWSPrivateNetworkAWSEC2SecurityGroupF5CCE5AF
+            - GroupId
+      SubnetIds:
+        - Ref: AWSPrivateNetworkAWSPrivateSubnetASubnetF4AE8876
+        - Ref: AWSPrivateNetworkAWSPrivateSubnetBSubnet93A0CDD9
+      VpcEndpointType: Interface
+    Metadata:
+      aws:cdk:path: CdkHybridArchitectureDemoStack/AWSPrivateNetwork/AWSSSMInterfaceEndpoint/Resource
+  AWSPrivateNetworkAWSEC2Role0F81DFA9:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Statement:
+          - Action: sts:AssumeRole
+            Effect: Allow
+            Principal:
+              Service: ec2.amazonaws.com
+        Version: "2012-10-17"
+      Path: /
+      Policies:
+        - PolicyDocument:
+            Statement:
+              - Action:
+                  - ec2messages:AcknowledgeMessage
+                  - ec2messages:DeleteMessage
+                  - ec2messages:FailMessage
+                  - ec2messages:GetEndpoint
+                  - ec2messages:GetMessages
+                  - ec2messages:SendReply
+                  - s3:*
+                  - sns:*
+                  - ssm:DescribeAssociation
+                  - ssm:DescribeDocument
+                  - ssm:GetDeployablePatchSnapshotForInstance
+                  - ssm:GetDocument
+                  - ssm:GetManifest
+                  - ssm:GetParameter
+                  - ssm:GetParameters
+                  - ssm:ListAssociations
+                  - ssm:ListInstanceAssociations
+                  - ssm:PutComplianceItems
+                  - ssm:PutConfigurePackageResult
+                  - ssm:PutInventory
+                  - ssm:UpdateAssociationStatus
+                  - ssm:UpdateInstanceAssociationStatus
+                  - ssm:UpdateInstanceInformation
+                  - ssmmessages:CreateControlChannel
+                  - ssmmessages:CreateDataChannel
+                  - ssmmessages:OpenControlChannel
+                  - ssmmessages:OpenDataChannel
+                Effect: Allow
+                Resource: "*"
+            Version: "2012-10-17"
+          PolicyName: root
+      RoleName: aws-private-network-ec2-iam-role
+    Metadata:
+      aws:cdk:path: CdkHybridArchitectureDemoStack/AWSPrivateNetwork/AWSEC2Role/Resource
+  AWSPrivateNetworkAWSEC2InstanceProfileF3CF611F:
+    Type: AWS::IAM::InstanceProfile
+    Properties:
+      Roles:
+        - Ref: AWSPrivateNetworkAWSEC2Role0F81DFA9
+      Path: /
+    Metadata:
+      aws:cdk:path: CdkHybridArchitectureDemoStack/AWSPrivateNetwork/AWSEC2InstanceProfile
+  AWSPrivateNetworkAWSEC2AInstanceProfile4B257095:
+    Type: AWS::IAM::InstanceProfile
+    Properties:
+      Roles: []
+    Metadata:
+      aws:cdk:path: CdkHybridArchitectureDemoStack/AWSPrivateNetwork/AWSEC2A/InstanceProfile
+  AWSPrivateNetworkAWSEC2A3CB0DC13:
+    Type: AWS::EC2::Instance
+    Properties:
+      AvailabilityZone:
+        Fn::Select:
+          - 0
+          - Fn::GetAZs: ""
+      IamInstanceProfile:
+        Ref: AWSPrivateNetworkAWSEC2AInstanceProfile4B257095
+      ImageId:
+        Ref: SsmParameterValueawsserviceamiamazonlinuxlatestamznamihvmx8664gp2C96584B6F00A464EAD1953AFF4B05118Parameter
+      InstanceType: t2.micro
+      SecurityGroupIds:
+        - Fn::GetAtt:
+            - AWSPrivateNetworkAWSEC2SecurityGroupF5CCE5AF
+            - GroupId
+      SubnetId:
+        Ref: AWSPrivateNetworkAWSPrivateSubnetASubnetF4AE8876
+      Tags:
+        - Key: Name
+          Value: aws-private-network-ec2-a
+      UserData:
+        Fn::Base64: "#!/bin/bash"
+    DependsOn:
+      - AWSPrivateNetworkAWSEC2InstanceProfileF3CF611F
+    Metadata:
+      aws:cdk:path: CdkHybridArchitectureDemoStack/AWSPrivateNetwork/AWSEC2A/Resource
+  AWSPrivateNetworkAWSEC2BInstanceProfileCE8BCE4D:
+    Type: AWS::IAM::InstanceProfile
+    Properties:
+      Roles: []
+    Metadata:
+      aws:cdk:path: CdkHybridArchitectureDemoStack/AWSPrivateNetwork/AWSEC2B/InstanceProfile
+  AWSPrivateNetworkAWSEC2BE7C37BEE:
+    Type: AWS::EC2::Instance
+    Properties:
+      AvailabilityZone:
+        Fn::Select:
+          - 1
+          - Fn::GetAZs: ""
+      IamInstanceProfile:
+        Ref: AWSPrivateNetworkAWSEC2BInstanceProfileCE8BCE4D
+      ImageId:
+        Ref: SsmParameterValueawsserviceamiamazonlinuxlatestamznamihvmx8664gp2C96584B6F00A464EAD1953AFF4B05118Parameter
+      InstanceType: t2.micro
+      SecurityGroupIds:
+        - Fn::GetAtt:
+            - AWSPrivateNetworkAWSEC2SecurityGroupF5CCE5AF
+            - GroupId
+      SubnetId:
+        Ref: AWSPrivateNetworkAWSPrivateSubnetBSubnet93A0CDD9
+      Tags:
+        - Key: Name
+          Value: aws-private-network-ec2-b
+      UserData:
+        Fn::Base64: "#!/bin/bash"
+    DependsOn:
+      - AWSPrivateNetworkAWSEC2InstanceProfileF3CF611F
+    Metadata:
+      aws:cdk:path: CdkHybridArchitectureDemoStack/AWSPrivateNetwork/AWSEC2B/Resource
+  CDKMetadata:
+    Type: AWS::CDK::Metadata
+    Properties:
+      Analytics: v2:deflate64:H4sIAAAAAAAA/31PwWrDMAz9lt4dr+tYYcdSRsktJKXXorjKqjaRgy1TQsi/z02W5TDYSXpPeu9JG7191+sVPHxiLvekplL3hYC5q0idezQb3Z9ao/YVn7K9KkLJKE+0dLkNgkcoa3yiowP2JAcQfED3l9lJdL82yIt2sVusdt5bQyBkWRVogiPpDs6Gdlz+l0j5y6H3KmVBV4HBeP8nX1pLU2b84xem7AXYjCfM/aAIGt3ndnporvM4c7aiGodB5ehtcJM4AwcNxsBR8jMYVNbJ1fLLm35d64/VzRMlLrBQgzqf6jeB4tYxgQEAAA==
+    Metadata:
+      aws:cdk:path: CdkHybridArchitectureDemoStack/CDKMetadata/Default
+Parameters:
+  SsmParameterValueawsserviceamiamazonlinuxlatestamznamihvmx8664gp2C96584B6F00A464EAD1953AFF4B05118Parameter:
+    Type: AWS::SSM::Parameter::Value<AWS::EC2::Image::Id>
+    Default: /aws/service/ami-amazon-linux-latest/amzn-ami-hvm-x86_64-gp2
+  BootstrapVersion:
+    Type: AWS::SSM::Parameter::Value<String>
+    Default: /cdk-bootstrap/hnb659fds/version
+    Description: Version of the CDK Bootstrap resources in this environment, automatically retrieved from SSM Parameter Store. [cdk:skip]
+Rules:
+  CheckBootstrapVersion:
+    Assertions:
+      - Assert:
+          Fn::Not:
+            - Fn::Contains:
+                - - "1"
+                  - "2"
+                  - "3"
+                  - "4"
+                  - "5"
+                - Ref: BootstrapVersion
+        AssertDescription: CDK bootstrap stack version 6 required. Please run 'cdk bootstrap' with a recent version of the CDK CLI.
+

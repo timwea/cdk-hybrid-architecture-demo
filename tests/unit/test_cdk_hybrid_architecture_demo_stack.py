@@ -10,6 +10,6 @@ def test_sqs_queue_created():
     stack = CdkHybridArchitectureDemoStack(app, "cdk-hybrid-architecture-demo")
     template = assertions.Template.from_stack(stack)
 
-#     template.has_resource_properties("AWS::SQS::Queue", {
-#         "VisibilityTimeout": 300
-#     })
+    template.has_resource_properties("AWS::EC2::Instance", {
+        "InstanceType": "t2.micro"
+    })
