@@ -7,7 +7,7 @@ from aws_cdk import (
 )
 from constructs import Construct
 
-import config
+from cdk_hybrid_architecture_demo import config
 
 class Subnet(Construct):
     """
@@ -82,6 +82,7 @@ class AWSPrivateNetwork(Construct):
         :param azs: A list of availability zones to use for the VPC subnets.
         :type azs: list
         """
+        super().__init__(scope, id, **kwargs)
         
         self.vpc = ec2.Vpc(
             scope=self,
@@ -140,7 +141,7 @@ class AWSPrivateNetwork(Construct):
                 self.private_subnet_A.subnet_id,
                 self.private_subnet_B.subnet_id
             ],
-            transit_gateway_id=self.tgw.attr_id,
+            transit_gateway_id=self.transit_gateway.attr_id,
             vpc_id=self.vpc.vpc_id,
             tags=[CfnTag(
                 key="Name",
@@ -346,21 +347,10 @@ class AWSPrivateNetwork(Construct):
         )
 
 class CdkHybridArchitectureDemoStack(Stack):
-    """
-    A class that defines an AWS CloudFormation stack for the hybrid architecture demo.
-
-    This stack creates an Amazon VPC with private subnets, transit gateway, security groups, and other resources.
-    """
 
     def __init__(self, scope: Construct, construct_id: str, **kwargs) -> None:
-        """
-        Initializes a new instance of the `CdkHybridArchitectureDemoStack` class.
-
-        :param scope: The parent construct of the stack.
-        :param construct_id: A unique identifier for the stack.
-        :param kwargs: Additional keyword arguments to pass to the parent constructor.
-        """
         super().__init__(scope, construct_id, **kwargs)
+        
         
         aws_private_network = AWSPrivateNetwork(
             scope=self,
