@@ -121,15 +121,11 @@ Resources:
         Ref: AWSPrivateNetworkAWSPrivateSubnetBSubnet93A0CDD9
     Metadata:
       aws:cdk:path: CdkHybridArchitectureDemoStack/AWSPrivateNetwork/AWSPrivateSubnetBRTAssoc
-  AWSPrivateNetworkAWSEC2SecurityGroupF5CCE5AF:
+  AWSPrivateNetworkAWSEC2SecurityGroup9BD497D9:
     Type: AWS::EC2::SecurityGroup
     Properties:
       GroupDescription: AWS private network default security group
       GroupName: aws-vpc-ec2-sg
-      SecurityGroupEgress:
-        - CidrIp: 0.0.0.0/0
-          Description: Allow all outbound traffic by default
-          IpProtocol: "-1"
       SecurityGroupIngress:
         - CidrIp: 0.0.0.0/0
           Description: Allow SSH IPv4 IN
@@ -139,40 +135,25 @@ Resources:
         - CidrIp: 192.168.8.0/21
           Description: Allow ALL from ONPREM Networks
           IpProtocol: "-1"
-        - CidrIp:
-            Fn::GetAtt:
-              - AWSPrivateNetworkAWSVpcE0F4E4E3
-              - CidrBlock
-          Description:
-            Fn::Join:
-              - ""
-              - - "from "
-                - Fn::GetAtt:
-                    - AWSPrivateNetworkAWSVpcE0F4E4E3
-                    - CidrBlock
-                - :443
-          FromPort: 443
-          IpProtocol: tcp
-          ToPort: 443
       VpcId:
         Ref: AWSPrivateNetworkAWSVpcE0F4E4E3
     Metadata:
-      aws:cdk:path: CdkHybridArchitectureDemoStack/AWSPrivateNetwork/AWSEC2SecurityGroup/Resource
+      aws:cdk:path: CdkHybridArchitectureDemoStack/AWSPrivateNetwork/AWSEC2SecurityGroup
   AWSPrivateNetworkAWSEC2SecurityGroupSelfReferenceRule941796BD:
     Type: AWS::EC2::SecurityGroupIngress
     Properties:
       IpProtocol: "-1"
       GroupId:
         Fn::GetAtt:
-          - AWSPrivateNetworkAWSEC2SecurityGroupF5CCE5AF
+          - AWSPrivateNetworkAWSEC2SecurityGroup9BD497D9
           - GroupId
       SourceSecurityGroupId:
         Fn::GetAtt:
-          - AWSPrivateNetworkAWSEC2SecurityGroupF5CCE5AF
+          - AWSPrivateNetworkAWSEC2SecurityGroup9BD497D9
           - GroupId
     Metadata:
       aws:cdk:path: CdkHybridArchitectureDemoStack/AWSPrivateNetwork/AWSEC2SecurityGroupSelfReferenceRule
-  AWSPrivateNetworkAWSEC2MessagesInterfaceEndpoint6DE12C0D:
+  AWSPrivateNetworkAWSEC2MessagesInterfaceEndpoint0695F117:
     Type: AWS::EC2::VPCEndpoint
     Properties:
       ServiceName: com.amazonaws.us-east-1.ec2messages
@@ -181,15 +162,15 @@ Resources:
       PrivateDnsEnabled: true
       SecurityGroupIds:
         - Fn::GetAtt:
-            - AWSPrivateNetworkAWSEC2SecurityGroupF5CCE5AF
+            - AWSPrivateNetworkAWSEC2SecurityGroup9BD497D9
             - GroupId
       SubnetIds:
         - Ref: AWSPrivateNetworkAWSPrivateSubnetASubnetF4AE8876
         - Ref: AWSPrivateNetworkAWSPrivateSubnetBSubnet93A0CDD9
-      VpcEndpointType: Interface
+      VpcEndpointType: interface
     Metadata:
-      aws:cdk:path: CdkHybridArchitectureDemoStack/AWSPrivateNetwork/AWSEC2MessagesInterfaceEndpoint/Resource
-  AWSPrivateNetworkAWSSSMMessagesInterfaceEndpoint44B51C7E:
+      aws:cdk:path: CdkHybridArchitectureDemoStack/AWSPrivateNetwork/AWSEC2MessagesInterfaceEndpoint
+  AWSPrivateNetworkAWSSSMMessagesInterfaceEndpoint0B1888DD:
     Type: AWS::EC2::VPCEndpoint
     Properties:
       ServiceName: com.amazonaws.us-east-1.ssmmessages
@@ -198,15 +179,15 @@ Resources:
       PrivateDnsEnabled: true
       SecurityGroupIds:
         - Fn::GetAtt:
-            - AWSPrivateNetworkAWSEC2SecurityGroupF5CCE5AF
+            - AWSPrivateNetworkAWSEC2SecurityGroup9BD497D9
             - GroupId
       SubnetIds:
         - Ref: AWSPrivateNetworkAWSPrivateSubnetASubnetF4AE8876
         - Ref: AWSPrivateNetworkAWSPrivateSubnetBSubnet93A0CDD9
-      VpcEndpointType: Interface
+      VpcEndpointType: interface
     Metadata:
-      aws:cdk:path: CdkHybridArchitectureDemoStack/AWSPrivateNetwork/AWSSSMMessagesInterfaceEndpoint/Resource
-  AWSPrivateNetworkAWSSSMInterfaceEndpoint0D412622:
+      aws:cdk:path: CdkHybridArchitectureDemoStack/AWSPrivateNetwork/AWSSSMMessagesInterfaceEndpoint
+  AWSPrivateNetworkAWSSSMInterfaceEndpoint5F28956A:
     Type: AWS::EC2::VPCEndpoint
     Properties:
       ServiceName: com.amazonaws.us-east-1.ssm
@@ -215,14 +196,14 @@ Resources:
       PrivateDnsEnabled: true
       SecurityGroupIds:
         - Fn::GetAtt:
-            - AWSPrivateNetworkAWSEC2SecurityGroupF5CCE5AF
+            - AWSPrivateNetworkAWSEC2SecurityGroup9BD497D9
             - GroupId
       SubnetIds:
         - Ref: AWSPrivateNetworkAWSPrivateSubnetASubnetF4AE8876
         - Ref: AWSPrivateNetworkAWSPrivateSubnetBSubnet93A0CDD9
-      VpcEndpointType: Interface
+      VpcEndpointType: interface
     Metadata:
-      aws:cdk:path: CdkHybridArchitectureDemoStack/AWSPrivateNetwork/AWSSSMInterfaceEndpoint/Resource
+      aws:cdk:path: CdkHybridArchitectureDemoStack/AWSPrivateNetwork/AWSSSMInterfaceEndpoint
   AWSPrivateNetworkAWSEC2Role0F81DFA9:
     Type: AWS::IAM::Role
     Properties:
@@ -280,13 +261,475 @@ Resources:
       Path: /
     Metadata:
       aws:cdk:path: CdkHybridArchitectureDemoStack/AWSPrivateNetwork/AWSEC2InstanceProfile
-  AWSPrivateNetworkAWSEC2AInstanceProfile4B257095:
+  AWSPrivateNetworkAWSEC2AB1880DCB:
+    Type: AWS::EC2::Instance
+    Properties:
+      IamInstanceProfile:
+        Ref: AWSPrivateNetworkAWSEC2InstanceProfileF3CF611F
+      ImageId:
+        Ref: SsmParameterValueawsserviceamiamazonlinuxlatestamznamihvmx8664gp2C96584B6F00A464EAD1953AFF4B05118Parameter
+      InstanceType: t2.micro
+      SubnetId:
+        Ref: AWSPrivateNetworkAWSPrivateSubnetASubnetF4AE8876
+      Tags:
+        - Key: Name
+          Value: aws-private-network-ec2-a
+    Metadata:
+      aws:cdk:path: CdkHybridArchitectureDemoStack/AWSPrivateNetwork/AWSEC2A
+  AWSPrivateNetworkAWSEC2B40439EBD:
+    Type: AWS::EC2::Instance
+    Properties:
+      IamInstanceProfile:
+        Ref: AWSPrivateNetworkAWSEC2InstanceProfileF3CF611F
+      ImageId:
+        Ref: SsmParameterValueawsserviceamiamazonlinuxlatestamznamihvmx8664gp2C96584B6F00A464EAD1953AFF4B05118Parameter
+      InstanceType: t2.micro
+      SubnetId:
+        Ref: AWSPrivateNetworkAWSPrivateSubnetBSubnet93A0CDD9
+      Tags:
+        - Key: Name
+          Value: aws-private-network-ec2-b
+    Metadata:
+      aws:cdk:path: CdkHybridArchitectureDemoStack/AWSPrivateNetwork/AWSEC2B
+  OnPremNetworkOnPremVpcC0C7D778:
+    Type: AWS::EC2::VPC
+    Properties:
+      CidrBlock: 192.168.8.0/21
+      EnableDnsHostnames: true
+      EnableDnsSupport: true
+      InstanceTenancy: default
+      Tags:
+        - Key: Name
+          Value: onprem-network
+    Metadata:
+      aws:cdk:path: CdkHybridArchitectureDemoStack/OnPremNetwork/OnPremVpc/Resource
+  OnPremNetworkOnPremPublicSubnet70AF01F6:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId:
+        Ref: OnPremNetworkOnPremVpcC0C7D778
+      AvailabilityZone:
+        Fn::Select:
+          - 0
+          - Fn::GetAZs: ""
+      CidrBlock: 192.168.12.0/24
+      MapPublicIpOnLaunch: false
+      Tags:
+        - Key: Name
+          Value: CdkHybridArchitectureDemoStack/OnPremNetwork/OnPremPublicSubnet/OnPremPublicSubnet
+    Metadata:
+      aws:cdk:path: CdkHybridArchitectureDemoStack/OnPremNetwork/OnPremPublicSubnet/OnPremPublicSubnet/Subnet
+  OnPremNetworkOnPremPrivateSubnetASubnet0BF29108:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId:
+        Ref: OnPremNetworkOnPremVpcC0C7D778
+      AvailabilityZone:
+        Fn::Select:
+          - 0
+          - Fn::GetAZs: ""
+      CidrBlock: 192.168.10.0/24
+      MapPublicIpOnLaunch: false
+      Tags:
+        - Key: Name
+          Value: CdkHybridArchitectureDemoStack/OnPremNetwork/OnPremPrivateSubnetA/OnPremPrivateSubnetA
+    Metadata:
+      aws:cdk:path: CdkHybridArchitectureDemoStack/OnPremNetwork/OnPremPrivateSubnetA/OnPremPrivateSubnetA/Subnet
+  OnPremNetworkOnPremPrivateSubnetBSubnetA1F0A33A:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId:
+        Ref: OnPremNetworkOnPremVpcC0C7D778
+      AvailabilityZone:
+        Fn::Select:
+          - 0
+          - Fn::GetAZs: ""
+      CidrBlock: 192.168.11.0/24
+      MapPublicIpOnLaunch: false
+      Tags:
+        - Key: Name
+          Value: CdkHybridArchitectureDemoStack/OnPremNetwork/OnPremPrivateSubnetB/OnPremPrivateSubnetB
+    Metadata:
+      aws:cdk:path: CdkHybridArchitectureDemoStack/OnPremNetwork/OnPremPrivateSubnetB/OnPremPrivateSubnetB/Subnet
+  OnPremNetworkOnPremPublicSubnetRouteTableC749F531:
+    Type: AWS::EC2::RouteTable
+    Properties:
+      VpcId:
+        Ref: OnPremNetworkOnPremVpcC0C7D778
+      Tags:
+        - Key: Name
+          Value: onprem-network-public_subnet_route_table
+    Metadata:
+      aws:cdk:path: CdkHybridArchitectureDemoStack/OnPremNetwork/OnPremPublicSubnetRouteTable
+  OnPremNetworkOnPremPrivateSubnetARouteTable8AD32FC1:
+    Type: AWS::EC2::RouteTable
+    Properties:
+      VpcId:
+        Ref: OnPremNetworkOnPremVpcC0C7D778
+      Tags:
+        - Key: Name
+          Value: onprem-network-private_subnet_A_route_table
+    Metadata:
+      aws:cdk:path: CdkHybridArchitectureDemoStack/OnPremNetwork/OnPremPrivateSubnetARouteTable
+  OnPremNetworkOnPremPrivateSubnetBRouteTableCD70C319:
+    Type: AWS::EC2::RouteTable
+    Properties:
+      VpcId:
+        Ref: OnPremNetworkOnPremVpcC0C7D778
+      Tags:
+        - Key: Name
+          Value: onprem-network-private_subnet_B_route_table
+    Metadata:
+      aws:cdk:path: CdkHybridArchitectureDemoStack/OnPremNetwork/OnPremPrivateSubnetBRouteTable
+  OnPremNetworkOnPremEC2SecurityGroupEDDCABFE:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: On-Prem network default security group
+      GroupName: onprem-network-ec2-sg
+      SecurityGroupIngress:
+        - CidrIp: 10.16.0.0/16
+          Description: Allow All from AWS Environment
+          IpProtocol: "-1"
+      VpcId:
+        Ref: OnPremNetworkOnPremVpcC0C7D778
+    Metadata:
+      aws:cdk:path: CdkHybridArchitectureDemoStack/OnPremNetwork/OnPremEC2SecurityGroup
+  OnPremNetworkOnPremiseEC2SecurityGroupSelfReferenceRuleE67E350C:
+    Type: AWS::EC2::SecurityGroupIngress
+    Properties:
+      IpProtocol: "-1"
+      GroupId:
+        Fn::GetAtt:
+          - OnPremNetworkOnPremEC2SecurityGroupEDDCABFE
+          - GroupId
+      SourceSecurityGroupId:
+        Fn::GetAtt:
+          - OnPremNetworkOnPremEC2SecurityGroupEDDCABFE
+          - GroupId
+    Metadata:
+      aws:cdk:path: CdkHybridArchitectureDemoStack/OnPremNetwork/OnPremiseEC2SecurityGroupSelfReferenceRule
+  OnPremNetworkOnPremRouterAPrivateNetworkInterface02B1094A:
+    Type: AWS::EC2::NetworkInterface
+    Properties:
+      SubnetId:
+        Ref: OnPremNetworkOnPremPrivateSubnetASubnet0BF29108
+      Description: OnPrem RouterA Private Interface
+      GroupSet:
+        - Fn::GetAtt:
+            - OnPremNetworkOnPremEC2SecurityGroupEDDCABFE
+            - GroupId
+      SourceDestCheck: false
+      Tags:
+        - Key: Name
+          Value: onprem-routerA-private-network-interface
+    Metadata:
+      aws:cdk:path: CdkHybridArchitectureDemoStack/OnPremNetwork/OnPremRouterAPrivateNetworkInterface
+  OnPremNetworkOnPremRouterAPublicNetworkInterface88C11906:
+    Type: AWS::EC2::NetworkInterface
+    Properties:
+      SubnetId:
+        Ref: OnPremNetworkOnPremPublicSubnet70AF01F6
+      Description: OnPrem RouterA Public Interface
+      GroupSet:
+        - Fn::GetAtt:
+            - OnPremNetworkOnPremEC2SecurityGroupEDDCABFE
+            - GroupId
+      SourceDestCheck: false
+      Tags:
+        - Key: Name
+          Value: onprem-routerA-public-network-interface
+    Metadata:
+      aws:cdk:path: CdkHybridArchitectureDemoStack/OnPremNetwork/OnPremRouterAPublicNetworkInterface
+  OnPremNetworkOnPremRouterBPrivateNetworkInterface3DD20E0D:
+    Type: AWS::EC2::NetworkInterface
+    Properties:
+      SubnetId:
+        Ref: OnPremNetworkOnPremPrivateSubnetBSubnetA1F0A33A
+      Description: OnPrem RouterB Private Interface
+      GroupSet:
+        - Fn::GetAtt:
+            - OnPremNetworkOnPremEC2SecurityGroupEDDCABFE
+            - GroupId
+      SourceDestCheck: false
+      Tags:
+        - Key: Name
+          Value: onprem-routerB-private-network-interface
+    Metadata:
+      aws:cdk:path: CdkHybridArchitectureDemoStack/OnPremNetwork/OnPremRouterBPrivateNetworkInterface
+  OnPremNetworkOnPremRouterBPublicNetworkInterface9CAF4D8E:
+    Type: AWS::EC2::NetworkInterface
+    Properties:
+      SubnetId:
+        Ref: OnPremNetworkOnPremPublicSubnet70AF01F6
+      Description: OnPrem RouterB Public Interface
+      GroupSet:
+        - Fn::GetAtt:
+            - OnPremNetworkOnPremEC2SecurityGroupEDDCABFE
+            - GroupId
+      SourceDestCheck: false
+      Tags:
+        - Key: Name
+          Value: onprem-routerB-public-network-interface
+    Metadata:
+      aws:cdk:path: CdkHybridArchitectureDemoStack/OnPremNetwork/OnPremRouterBPublicNetworkInterface
+  OnPremNetworkOnPremIGW7014B742:
+    Type: AWS::EC2::InternetGateway
+    Properties:
+      Tags:
+        - Key: Name
+          Value: onprem-network-igw
+    Metadata:
+      aws:cdk:path: CdkHybridArchitectureDemoStack/OnPremNetwork/OnPremIGW
+  OnPremNetworkOnPremIGWAttachC51A99E7:
+    Type: AWS::EC2::VPCGatewayAttachment
+    Properties:
+      VpcId:
+        Ref: OnPremNetworkOnPremVpcC0C7D778
+      InternetGatewayId:
+        Fn::GetAtt:
+          - OnPremNetworkOnPremIGW7014B742
+          - InternetGatewayId
+    Metadata:
+      aws:cdk:path: CdkHybridArchitectureDemoStack/OnPremNetwork/OnPremIGWAttach
+  OnPremNetworkOnPremPublicSubnetRouteTableDefaultRoute114FE63C:
+    Type: AWS::EC2::Route
+    Properties:
+      RouteTableId:
+        Fn::GetAtt:
+          - OnPremNetworkOnPremPublicSubnetRouteTableC749F531
+          - RouteTableId
+      DestinationCidrBlock: 0.0.0.0/0
+      GatewayId:
+        Fn::GetAtt:
+          - OnPremNetworkOnPremIGW7014B742
+          - InternetGatewayId
+    DependsOn:
+      - OnPremNetworkOnPremIGWAttachC51A99E7
+    Metadata:
+      aws:cdk:path: CdkHybridArchitectureDemoStack/OnPremNetwork/OnPremPublicSubnetRouteTableDefaultRoute
+  OnPremNetworkOnPremPrivateSubnetARouteTableRouteAEFE0B15:
+    Type: AWS::EC2::Route
+    Properties:
+      RouteTableId:
+        Fn::GetAtt:
+          - OnPremNetworkOnPremPrivateSubnetARouteTable8AD32FC1
+          - RouteTableId
+      DestinationCidrBlock: 10.16.0.0/16
+      NetworkInterfaceId:
+        Fn::GetAtt:
+          - OnPremNetworkOnPremRouterAPrivateNetworkInterface02B1094A
+          - Id
+    Metadata:
+      aws:cdk:path: CdkHybridArchitectureDemoStack/OnPremNetwork/OnPremPrivateSubnetARouteTableRoute
+  OnPremNetworkOnPremPrivateSubnetBRouteTableRoute4BDE72D3:
+    Type: AWS::EC2::Route
+    Properties:
+      RouteTableId:
+        Fn::GetAtt:
+          - OnPremNetworkOnPremPrivateSubnetBRouteTableCD70C319
+          - RouteTableId
+      DestinationCidrBlock: 10.16.0.0/16
+      NetworkInterfaceId:
+        Fn::GetAtt:
+          - OnPremNetworkOnPremRouterBPrivateNetworkInterface3DD20E0D
+          - Id
+    Metadata:
+      aws:cdk:path: CdkHybridArchitectureDemoStack/OnPremNetwork/OnPremPrivateSubnetBRouteTableRoute
+  OnPremNetworkOnPremPublicSubnetRTAssocC1A90CB8:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      RouteTableId:
+        Fn::GetAtt:
+          - OnPremNetworkOnPremPublicSubnetRouteTableC749F531
+          - RouteTableId
+      SubnetId:
+        Ref: OnPremNetworkOnPremPublicSubnet70AF01F6
+    Metadata:
+      aws:cdk:path: CdkHybridArchitectureDemoStack/OnPremNetwork/OnPremPublicSubnetRTAssoc
+  OnPremNetworkOnPremPrivateSubnetARTAssocEB14CA33:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      RouteTableId:
+        Fn::GetAtt:
+          - OnPremNetworkOnPremPrivateSubnetARouteTable8AD32FC1
+          - RouteTableId
+      SubnetId:
+        Ref: OnPremNetworkOnPremPrivateSubnetASubnet0BF29108
+    Metadata:
+      aws:cdk:path: CdkHybridArchitectureDemoStack/OnPremNetwork/OnPremPrivateSubnetARTAssoc
+  OnPremNetworkOnPremPrivateSubnetBRTAssocADF58A48:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      RouteTableId:
+        Fn::GetAtt:
+          - OnPremNetworkOnPremPrivateSubnetBRouteTableCD70C319
+          - RouteTableId
+      SubnetId:
+        Ref: OnPremNetworkOnPremPrivateSubnetBSubnetA1F0A33A
+    Metadata:
+      aws:cdk:path: CdkHybridArchitectureDemoStack/OnPremNetwork/OnPremPrivateSubnetBRTAssoc
+  OnPremNetworkOnPremRouterAElasticIP3FFCC428:
+    Type: AWS::EC2::EIP
+    DependsOn:
+      - OnPremNetworkOnPremIGWAttachC51A99E7
+    Metadata:
+      aws:cdk:path: CdkHybridArchitectureDemoStack/OnPremNetwork/OnPremRouterAElasticIP
+  OnPremNetworkOnPremRouterAElasticIPAssoc74851ED5:
+    Type: AWS::EC2::EIPAssociation
+    Properties:
+      AllocationId:
+        Fn::GetAtt:
+          - OnPremNetworkOnPremRouterAElasticIP3FFCC428
+          - AllocationId
+      NetworkInterfaceId:
+        Fn::GetAtt:
+          - OnPremNetworkOnPremRouterAPublicNetworkInterface88C11906
+          - Id
+    Metadata:
+      aws:cdk:path: CdkHybridArchitectureDemoStack/OnPremNetwork/OnPremRouterAElasticIPAssoc
+  OnPremNetworkOnPremRouterBElasticIP16441891:
+    Type: AWS::EC2::EIP
+    DependsOn:
+      - OnPremNetworkOnPremIGWAttachC51A99E7
+    Metadata:
+      aws:cdk:path: CdkHybridArchitectureDemoStack/OnPremNetwork/OnPremRouterBElasticIP
+  OnPremNetworkOnPremRouterBElasticIPAssocBAE1A912:
+    Type: AWS::EC2::EIPAssociation
+    Properties:
+      AllocationId:
+        Fn::GetAtt:
+          - OnPremNetworkOnPremRouterBElasticIP16441891
+          - AllocationId
+      NetworkInterfaceId:
+        Fn::GetAtt:
+          - OnPremNetworkOnPremRouterBPublicNetworkInterface9CAF4D8E
+          - Id
+    Metadata:
+      aws:cdk:path: CdkHybridArchitectureDemoStack/OnPremNetwork/OnPremRouterBElasticIPAssoc
+  OnPremNetworkOnPremEC2MessagesInterfaceEndpointD5A3C1E0:
+    Type: AWS::EC2::VPCEndpoint
+    Properties:
+      ServiceName: com.amazonaws.us-east-1.ec2messages
+      VpcId:
+        Ref: OnPremNetworkOnPremVpcC0C7D778
+      PrivateDnsEnabled: true
+      SecurityGroupIds:
+        - Fn::GetAtt:
+            - OnPremNetworkOnPremEC2SecurityGroupEDDCABFE
+            - GroupId
+      SubnetIds:
+        - Ref: OnPremNetworkOnPremPublicSubnet70AF01F6
+      VpcEndpointType: interface
+    Metadata:
+      aws:cdk:path: CdkHybridArchitectureDemoStack/OnPremNetwork/OnPremEC2MessagesInterfaceEndpoint
+  OnPremNetworkOnPremSSMMessagesInterfaceEndpointC9DFE91A:
+    Type: AWS::EC2::VPCEndpoint
+    Properties:
+      ServiceName: com.amazonaws.us-east-1.ssmmessages
+      VpcId:
+        Ref: OnPremNetworkOnPremVpcC0C7D778
+      PrivateDnsEnabled: true
+      SecurityGroupIds:
+        - Fn::GetAtt:
+            - OnPremNetworkOnPremEC2SecurityGroupEDDCABFE
+            - GroupId
+      SubnetIds:
+        - Ref: OnPremNetworkOnPremPublicSubnet70AF01F6
+      VpcEndpointType: interface
+    Metadata:
+      aws:cdk:path: CdkHybridArchitectureDemoStack/OnPremNetwork/OnPremSSMMessagesInterfaceEndpoint
+  OnPremNetworkOnPremSSMInterfaceEndpointA204B6BF:
+    Type: AWS::EC2::VPCEndpoint
+    Properties:
+      ServiceName: com.amazonaws.us-east-1.ssm
+      VpcId:
+        Ref: OnPremNetworkOnPremVpcC0C7D778
+      PrivateDnsEnabled: true
+      SecurityGroupIds:
+        - Fn::GetAtt:
+            - OnPremNetworkOnPremEC2SecurityGroupEDDCABFE
+            - GroupId
+      SubnetIds:
+        - Ref: OnPremNetworkOnPremPublicSubnet70AF01F6
+      VpcEndpointType: interface
+    Metadata:
+      aws:cdk:path: CdkHybridArchitectureDemoStack/OnPremNetwork/OnPremSSMInterfaceEndpoint
+  OnPremNetworkOnPremS3InterfaceEndpoint6789FBE5:
+    Type: AWS::EC2::VPCEndpoint
+    Properties:
+      ServiceName: com.amazdonaws.us-east-1.s3
+      VpcId:
+        Ref: OnPremNetworkOnPremVpcC0C7D778
+      RouteTableIds:
+        - Fn::GetAtt:
+            - OnPremNetworkOnPremPublicSubnetRouteTableC749F531
+            - RouteTableId
+        - Fn::GetAtt:
+            - OnPremNetworkOnPremPrivateSubnetARouteTable8AD32FC1
+            - RouteTableId
+        - Fn::GetAtt:
+            - OnPremNetworkOnPremPrivateSubnetBRouteTableCD70C319
+            - RouteTableId
+    Metadata:
+      aws:cdk:path: CdkHybridArchitectureDemoStack/OnPremNetwork/OnPremS3InterfaceEndpoint
+  OnPremNetworkOnPremEC2Role3995E2F2:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Statement:
+          - Action: sts:AssumeRole
+            Effect: Allow
+            Principal:
+              Service: ec2.amazonaws.com
+        Version: "2012-10-17"
+      Path: /
+      Policies:
+        - PolicyDocument:
+            Statement:
+              - Action:
+                  - ec2messages:AcknowledgeMessage
+                  - ec2messages:DeleteMessage
+                  - ec2messages:FailMessage
+                  - ec2messages:GetEndpoint
+                  - ec2messages:GetMessages
+                  - ec2messages:SendReply
+                  - s3:*
+                  - sns:*
+                  - ssm:DescribeAssociation
+                  - ssm:DescribeDocument
+                  - ssm:GetDeployablePatchSnapshotForInstance
+                  - ssm:GetDocument
+                  - ssm:GetManifest
+                  - ssm:GetParameter
+                  - ssm:GetParameters
+                  - ssm:ListAssociations
+                  - ssm:ListInstanceAssociations
+                  - ssm:PutComplianceItems
+                  - ssm:PutConfigurePackageResult
+                  - ssm:PutInventory
+                  - ssm:UpdateAssociationStatus
+                  - ssm:UpdateInstanceAssociationStatus
+                  - ssm:UpdateInstanceInformation
+                  - ssmmessages:CreateControlChannel
+                  - ssmmessages:CreateDataChannel
+                  - ssmmessages:OpenControlChannel
+                  - ssmmessages:OpenDataChannel
+                Effect: Allow
+                Resource: "*"
+            Version: "2012-10-17"
+          PolicyName: root
+      RoleName: onprem-network-ec2-iam-role
+    Metadata:
+      aws:cdk:path: CdkHybridArchitectureDemoStack/OnPremNetwork/OnPremEC2Role/Resource
+  OnPremNetworkOnPremEC2InstanceProfile35C5EC21:
     Type: AWS::IAM::InstanceProfile
     Properties:
-      Roles: []
+      Roles:
+        - Ref: OnPremNetworkOnPremEC2Role3995E2F2
+      Path: /
     Metadata:
-      aws:cdk:path: CdkHybridArchitectureDemoStack/AWSPrivateNetwork/AWSEC2A/InstanceProfile
-  AWSPrivateNetworkAWSEC2A3CB0DC13:
+      aws:cdk:path: CdkHybridArchitectureDemoStack/OnPremNetwork/OnPremEC2InstanceProfile
+  OnPremNetworkOnPremRouterA1672C4E9:
     Type: AWS::EC2::Instance
     Properties:
       AvailabilityZone:
@@ -294,62 +737,150 @@ Resources:
           - 0
           - Fn::GetAZs: ""
       IamInstanceProfile:
-        Ref: AWSPrivateNetworkAWSEC2AInstanceProfile4B257095
-      ImageId:
-        Ref: SsmParameterValueawsserviceamiamazonlinuxlatestamznamihvmx8664gp2C96584B6F00A464EAD1953AFF4B05118Parameter
-      InstanceType: t2.micro
-      SecurityGroupIds:
-        - Fn::GetAtt:
-            - AWSPrivateNetworkAWSEC2SecurityGroupF5CCE5AF
-            - GroupId
-      SubnetId:
-        Ref: AWSPrivateNetworkAWSPrivateSubnetASubnetF4AE8876
+        Ref: OnPremNetworkOnPremEC2InstanceProfile35C5EC21
+      ImageId: ami-0ac80df6eff0e70b5
+      InstanceType: t3.small
+      NetworkInterfaces:
+        - DeviceIndex: "0"
+          NetworkInterfaceId:
+            Fn::GetAtt:
+              - OnPremNetworkOnPremRouterAPublicNetworkInterface88C11906
+              - Id
+        - DeviceIndex: "1"
+          NetworkInterfaceId:
+            Fn::GetAtt:
+              - OnPremNetworkOnPremRouterAPrivateNetworkInterface02B1094A
+              - Id
       Tags:
         - Key: Name
-          Value: aws-private-network-ec2-a
+          Value: onprem-router-A
       UserData:
-        Fn::Base64: "#!/bin/bash"
-    DependsOn:
-      - AWSPrivateNetworkAWSEC2InstanceProfileF3CF611F
+        Fn::Base64: |-
+          #!/bin/bash
+          apt-get update && apt-get install -y strongswan wget
+          mkdir /home/ubuntu/demo_assets
+          cd /home/ubuntu/demo_assets
+          wget https://raw.githubusercontent.com/acantril/learn-cantrill-io-labs/master/aws-hybrid-bgpvpn/OnPremRouter1/ipsec-vti.sh
+          wget https://raw.githubusercontent.com/acantril/learn-cantrill-io-labs/master/aws-hybrid-bgpvpn/OnPremRouter1/ipsec.conf
+          wget https://raw.githubusercontent.com/acantril/learn-cantrill-io-labs/master/aws-hybrid-bgpvpn/OnPremRouter1/ipsec.secrets
+          wget https://raw.githubusercontent.com/acantril/learn-cantrill-io-labs/master/aws-hybrid-bgpvpn/OnPremRouter1/51-eth1.yaml
+          wget https://raw.githubusercontent.com/acantril/learn-cantrill-io-labs/master/aws-hybrid-bgpvpn/OnPremRouter1/ffrouting-install.sh
+          chown ubuntu:ubuntu /home/ubuntu/demo_assets -R
+          cp /home/ubuntu/demo_assets/51-eth1.yaml /etc/netplan
+          netplan --debug apply
     Metadata:
-      aws:cdk:path: CdkHybridArchitectureDemoStack/AWSPrivateNetwork/AWSEC2A/Resource
-  AWSPrivateNetworkAWSEC2BInstanceProfileCE8BCE4D:
-    Type: AWS::IAM::InstanceProfile
-    Properties:
-      Roles: []
-    Metadata:
-      aws:cdk:path: CdkHybridArchitectureDemoStack/AWSPrivateNetwork/AWSEC2B/InstanceProfile
-  AWSPrivateNetworkAWSEC2BE7C37BEE:
+      aws:cdk:path: CdkHybridArchitectureDemoStack/OnPremNetwork/OnPremRouterA
+  OnPremNetworkOnPremRouterB37915DAA:
     Type: AWS::EC2::Instance
     Properties:
       AvailabilityZone:
         Fn::Select:
-          - 1
+          - 0
           - Fn::GetAZs: ""
       IamInstanceProfile:
-        Ref: AWSPrivateNetworkAWSEC2BInstanceProfileCE8BCE4D
+        Ref: OnPremNetworkOnPremEC2InstanceProfile35C5EC21
+      ImageId: ami-0ac80df6eff0e70b5
+      InstanceType: t3.small
+      NetworkInterfaces:
+        - DeviceIndex: "0"
+          NetworkInterfaceId:
+            Fn::GetAtt:
+              - OnPremNetworkOnPremRouterBPublicNetworkInterface9CAF4D8E
+              - Id
+        - DeviceIndex: "1"
+          NetworkInterfaceId:
+            Fn::GetAtt:
+              - OnPremNetworkOnPremRouterBPrivateNetworkInterface3DD20E0D
+              - Id
+      Tags:
+        - Key: Name
+          Value: onprem-router-B
+      UserData:
+        Fn::Base64: |-
+          #!/bin/bash
+          apt-get update && apt-get install -y strongswan wget
+          mkdir /home/ubuntu/demo_assets
+          cd /home/ubuntu/demo_assets
+          wget https://raw.githubusercontent.com/acantril/learn-cantrill-io-labs/master/aws-hybrid-bgpvpn/OnPremRouter1/ipsec-vti.sh
+          wget https://raw.githubusercontent.com/acantril/learn-cantrill-io-labs/master/aws-hybrid-bgpvpn/OnPremRouter1/ipsec.conf
+          wget https://raw.githubusercontent.com/acantril/learn-cantrill-io-labs/master/aws-hybrid-bgpvpn/OnPremRouter1/ipsec.secrets
+          wget https://raw.githubusercontent.com/acantril/learn-cantrill-io-labs/master/aws-hybrid-bgpvpn/OnPremRouter1/51-eth1.yaml
+          wget https://raw.githubusercontent.com/acantril/learn-cantrill-io-labs/master/aws-hybrid-bgpvpn/OnPremRouter1/ffrouting-install.sh
+          chown ubuntu:ubuntu /home/ubuntu/demo_assets -R
+          cp /home/ubuntu/demo_assets/51-eth1.yaml /etc/netplan
+          netplan --debug apply
+    Metadata:
+      aws:cdk:path: CdkHybridArchitectureDemoStack/OnPremNetwork/OnPremRouterB
+  OnPremNetworkOnPremServerA97988BC1:
+    Type: AWS::EC2::Instance
+    Properties:
+      IamInstanceProfile:
+        Ref: OnPremNetworkOnPremEC2InstanceProfile35C5EC21
       ImageId:
         Ref: SsmParameterValueawsserviceamiamazonlinuxlatestamznamihvmx8664gp2C96584B6F00A464EAD1953AFF4B05118Parameter
       InstanceType: t2.micro
-      SecurityGroupIds:
-        - Fn::GetAtt:
-            - AWSPrivateNetworkAWSEC2SecurityGroupF5CCE5AF
-            - GroupId
       SubnetId:
-        Ref: AWSPrivateNetworkAWSPrivateSubnetBSubnet93A0CDD9
+        Ref: OnPremNetworkOnPremPrivateSubnetASubnet0BF29108
       Tags:
         - Key: Name
-          Value: aws-private-network-ec2-b
-      UserData:
-        Fn::Base64: "#!/bin/bash"
-    DependsOn:
-      - AWSPrivateNetworkAWSEC2InstanceProfileF3CF611F
+          Value: onprem-server-a
     Metadata:
-      aws:cdk:path: CdkHybridArchitectureDemoStack/AWSPrivateNetwork/AWSEC2B/Resource
+      aws:cdk:path: CdkHybridArchitectureDemoStack/OnPremNetwork/OnPremServerA
+  OnPremNetworkOnPremServerB1682DB4E:
+    Type: AWS::EC2::Instance
+    Properties:
+      IamInstanceProfile:
+        Ref: OnPremNetworkOnPremEC2InstanceProfile35C5EC21
+      ImageId:
+        Ref: SsmParameterValueawsserviceamiamazonlinuxlatestamznamihvmx8664gp2C96584B6F00A464EAD1953AFF4B05118Parameter
+      InstanceType: t2.micro
+      SubnetId:
+        Ref: OnPremNetworkOnPremPrivateSubnetBSubnetA1F0A33A
+      Tags:
+        - Key: Name
+          Value: onprem-server-b
+    Metadata:
+      aws:cdk:path: CdkHybridArchitectureDemoStack/OnPremNetwork/OnPremServerB
+  OnPremNetworkOnPremRouterACGWE2A6A22A:
+    Type: AWS::EC2::CustomerGateway
+    Properties:
+      BgpAsn: 65016
+      IpAddress:
+        Fn::GetAtt:
+          - OnPremNetworkOnPremRouterA1672C4E9
+          - PublicIp
+      Type: ipsec.1
+      DeviceName: onprem-router-A-cgw
+      Tags:
+        - Key: Name
+          Value: onprem-router-A-cgw
+    DependsOn:
+      - OnPremNetworkOnPremRouterA1672C4E9
+      - OnPremNetworkOnPremRouterAElasticIPAssoc74851ED5
+    Metadata:
+      aws:cdk:path: CdkHybridArchitectureDemoStack/OnPremNetwork/OnPremRouterACGW
+  OnPremNetworkOnPremRouterBCGWA1F7E6A5:
+    Type: AWS::EC2::CustomerGateway
+    Properties:
+      BgpAsn: 65016
+      IpAddress:
+        Fn::GetAtt:
+          - OnPremNetworkOnPremRouterB37915DAA
+          - PublicIp
+      Type: ipsec.1
+      DeviceName: onprem-router-B-cgw
+      Tags:
+        - Key: Name
+          Value: onprem-router-B-cgw
+    DependsOn:
+      - OnPremNetworkOnPremRouterB37915DAA
+      - OnPremNetworkOnPremRouterBElasticIPAssocBAE1A912
+    Metadata:
+      aws:cdk:path: CdkHybridArchitectureDemoStack/OnPremNetwork/OnPremRouterBCGW
   CDKMetadata:
     Type: AWS::CDK::Metadata
     Properties:
-      Analytics: v2:deflate64:H4sIAAAAAAAA/31PwWrDMAz9lt4dr+tYYcdSRsktJKXXorjKqjaRgy1TQsi/z02W5TDYSXpPeu9JG7191+sVPHxiLvekplL3hYC5q0idezQb3Z9ao/YVn7K9KkLJKE+0dLkNgkcoa3yiowP2JAcQfED3l9lJdL82yIt2sVusdt5bQyBkWRVogiPpDs6Gdlz+l0j5y6H3KmVBV4HBeP8nX1pLU2b84xem7AXYjCfM/aAIGt3ndnporvM4c7aiGodB5ehtcJM4AwcNxsBR8jMYVNbJ1fLLm35d64/VzRMlLrBQgzqf6jeB4tYxgQEAAA==
+      Analytics: v2:deflate64:H4sIAAAAAAAA/22QQW+DMAyFf0vvIes6bdKOFaoqLhuiVa+TSd02AxyUOEII8d8HhIpp3cl5z/HzJ2/k26tcr6BxkToXUalz2R0YVCEG66tDtZHdqVYivtApjcXB54Q8quWVGc94hLzEUR0tkNO8B8YG2kdny0P6rUJaZpe4JWrrnFEaWBua2qi81dzurfH1g5HQ1aJzM+SOzrXRIT8hx0BqWvGB3BhbJMRoLxC8SQyLf+EOCf+i7pJ0Ln/YYu/YVGjnqV5oqGSXmXCPe72TpNZcdIl9LzJ0xtvAkYKFCgeWUXx6rn04z/ylF2nLN0NPL/J5Ld9X307ryHpiXaHMQv0BFjxH1MoBAAA=
     Metadata:
       aws:cdk:path: CdkHybridArchitectureDemoStack/CDKMetadata/Default
 Parameters:
@@ -360,6 +891,31 @@ Parameters:
     Type: AWS::SSM::Parameter::Value<String>
     Default: /cdk-bootstrap/hnb659fds/version
     Description: Version of the CDK Bootstrap resources in this environment, automatically retrieved from SSM Parameter Store. [cdk:skip]
+Outputs:
+  OnPremNetworkRouterAPublicIP06BCD05B:
+    Description: Public IP of Router A
+    Value:
+      Fn::GetAtt:
+        - OnPremNetworkOnPremRouterA1672C4E9
+        - PublicIp
+  OnPremNetworkRouterAPrivateIP284C1654:
+    Description: Private IP of Router A
+    Value:
+      Fn::GetAtt:
+        - OnPremNetworkOnPremRouterA1672C4E9
+        - PrivateIp
+  OnPremNetworkRouterBPublicIPD893440E:
+    Description: Public IP of Router B
+    Value:
+      Fn::GetAtt:
+        - OnPremNetworkOnPremRouterB37915DAA
+        - PublicIp
+  OnPremNetworkRouterBPrivateIP048C44AA:
+    Description: Private IP of Router B
+    Value:
+      Fn::GetAtt:
+        - OnPremNetworkOnPremRouterB37915DAA
+        - PrivateIp
 Rules:
   CheckBootstrapVersion:
     Assertions:

@@ -1,5 +1,5 @@
 Resources:
-  AWSPrivateNetworkAWSVpcE0F4E4E3:
+  Vpc8378EB38:
     Type: AWS::EC2::VPC
     Properties:
       CidrBlock: 10.16.0.0/16
@@ -8,14 +8,30 @@ Resources:
       InstanceTenancy: default
       Tags:
         - Key: Name
-          Value: private-aws-network
+          Value: nat_gateway_demo_vpc
     Metadata:
-      aws:cdk:path: CdkHybridArchitectureDemoStack/AWSPrivateNetwork/AWSVpc/Resource
-  AWSPrivateNetworkAWSVpcPrivateSubnetASubnetC2333EDC:
+      aws:cdk:path: NatGatewayStack/Vpc/Resource
+  PublicSubnet2F070567:
     Type: AWS::EC2::Subnet
     Properties:
       VpcId:
-        Ref: AWSPrivateNetworkAWSVpcE0F4E4E3
+        Ref: Vpc8378EB38
+      AvailabilityZone:
+        Fn::Select:
+          - 0
+          - Fn::GetAZs: ""
+      CidrBlock: 10.16.96.0/20
+      MapPublicIpOnLaunch: false
+      Tags:
+        - Key: Name
+          Value: NatGatewayStack/PublicSubnet/PublicSubnet
+    Metadata:
+      aws:cdk:path: NatGatewayStack/PublicSubnet/PublicSubnet/Subnet
+  PrivateSubnet70527EEF:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId:
+        Ref: Vpc8378EB38
       AvailabilityZone:
         Fn::Select:
           - 0
@@ -24,194 +40,123 @@ Resources:
       MapPublicIpOnLaunch: false
       Tags:
         - Key: Name
-          Value: CdkHybridArchitectureDemoStack/AWSPrivateNetwork/AWSVpcPrivateSubnetA/AWSVpcPrivateSubnetA
+          Value: NatGatewayStack/PrivateSubnet/PrivateSubnet
     Metadata:
-      aws:cdk:path: CdkHybridArchitectureDemoStack/AWSPrivateNetwork/AWSVpcPrivateSubnetA/AWSVpcPrivateSubnetA/Subnet
-  AWSPrivateNetworkAWSVpcPrivateSubnetBSubnet3881A3B2:
-    Type: AWS::EC2::Subnet
+      aws:cdk:path: NatGatewayStack/PrivateSubnet/PrivateSubnet/Subnet
+  IGW:
+    Type: AWS::EC2::InternetGateway
     Properties:
-      VpcId:
-        Ref: AWSPrivateNetworkAWSVpcE0F4E4E3
-      AvailabilityZone:
-        Fn::Select:
-          - 1
-          - Fn::GetAZs: ""
-      CidrBlock: 10.16.96.0/20
-      MapPublicIpOnLaunch: false
       Tags:
         - Key: Name
-          Value: CdkHybridArchitectureDemoStack/AWSPrivateNetwork/AWSVpcPrivateSubnetB/AWSVpcPrivateSubnetB
+          Value: nat_gateway_demo_igw
     Metadata:
-      aws:cdk:path: CdkHybridArchitectureDemoStack/AWSPrivateNetwork/AWSVpcPrivateSubnetB/AWSVpcPrivateSubnetB/Subnet
-  AWSPrivateNetworkAWSVpcCustomRT54EBF452:
+      aws:cdk:path: NatGatewayStack/IGW
+  IGWAttach:
+    Type: AWS::EC2::VPCGatewayAttachment
+    Properties:
+      VpcId:
+        Ref: Vpc8378EB38
+      InternetGatewayId:
+        Fn::GetAtt:
+          - IGW
+          - InternetGatewayId
+    Metadata:
+      aws:cdk:path: NatGatewayStack/IGWAttach
+  EIP:
+    Type: AWS::EC2::EIP
+    Properties:
+      Tags:
+        - Key: Name
+          Value: nat_gateway_demo_eip
+    Metadata:
+      aws:cdk:path: NatGatewayStack/EIP
+  NatGateway:
+    Type: AWS::EC2::NatGateway
+    Properties:
+      SubnetId:
+        Ref: PublicSubnet2F070567
+      AllocationId:
+        Fn::GetAtt:
+          - EIP
+          - AllocationId
+      Tags:
+        - Key: Name
+          Value: nat_gateway_demo_ngw
+    Metadata:
+      aws:cdk:path: NatGatewayStack/NatGateway
+  PrivateSubnetARouteTable:
     Type: AWS::EC2::RouteTable
     Properties:
       VpcId:
-        Ref: AWSPrivateNetworkAWSVpcE0F4E4E3
+        Ref: Vpc8378EB38
       Tags:
         - Key: Name
-          Value: custom_rt
+          Value: nat_gateway_demo_private_subnet_route_table
     Metadata:
-      aws:cdk:path: CdkHybridArchitectureDemoStack/AWSPrivateNetwork/AWSVpcCustomRT
-  AWSPrivateNetworkAWSVpcTransitGatewayEDEF3642:
-    Type: AWS::EC2::TransitGateway
-    Properties:
-      AmazonSideAsn: 64512
-      DefaultRouteTableAssociation: enable
-      Description: Transit Gateway for AWS private network
-      DnsSupport: enable
-      VpnEcmpSupport: enable
-    Metadata:
-      aws:cdk:path: CdkHybridArchitectureDemoStack/AWSPrivateNetwork/AWSVpcTransitGateway
-  AWSPrivateNetworkAWSVpcTransitGatewayAttachment45E6BBDA:
-    Type: AWS::EC2::TransitGatewayAttachment
-    Properties:
-      SubnetIds:
-        - Ref: AWSPrivateNetworkAWSVpcPrivateSubnetASubnetC2333EDC
-        - Ref: AWSPrivateNetworkAWSVpcPrivateSubnetBSubnet3881A3B2
-      TransitGatewayId:
-        Fn::GetAtt:
-          - AWSPrivateNetworkAWSVpcTransitGatewayEDEF3642
-          - Id
-      VpcId:
-        Ref: AWSPrivateNetworkAWSVpcE0F4E4E3
-    Metadata:
-      aws:cdk:path: CdkHybridArchitectureDemoStack/AWSPrivateNetwork/AWSVpcTransitGatewayAttachment
-  AWSPrivateNetworkAWSVpcTGWDefaultRoute1918A414:
+      aws:cdk:path: NatGatewayStack/PrivateSubnetARouteTable
+  PrivateSubnetRouteTableRoute:
     Type: AWS::EC2::Route
     Properties:
       RouteTableId:
         Fn::GetAtt:
-          - AWSPrivateNetworkAWSVpcCustomRT54EBF452
+          - PrivateSubnetARouteTable
           - RouteTableId
       DestinationCidrBlock: 0.0.0.0/0
-      TransitGatewayId:
+      NatGatewayId:
         Fn::GetAtt:
-          - AWSPrivateNetworkAWSVpcTransitGatewayEDEF3642
-          - Id
+          - NatGateway
+          - NatGatewayId
+    Metadata:
+      aws:cdk:path: NatGatewayStack/PrivateSubnetRouteTableRoute
+  PrivateSubnetRTAssoc:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      RouteTableId:
+        Fn::GetAtt:
+          - PrivateSubnetARouteTable
+          - RouteTableId
+      SubnetId:
+        Ref: PrivateSubnet70527EEF
+    Metadata:
+      aws:cdk:path: NatGatewayStack/PrivateSubnetRTAssoc
+  PublicSubnetRouteTable:
+    Type: AWS::EC2::RouteTable
+    Properties:
+      VpcId:
+        Ref: Vpc8378EB38
+      Tags:
+        - Key: Name
+          Value: nat_gateway_demo_public_subnet_route_table
+    Metadata:
+      aws:cdk:path: NatGatewayStack/PublicSubnetRouteTable
+  PublicSubnetRouteTableRoute:
+    Type: AWS::EC2::Route
+    Properties:
+      RouteTableId:
+        Fn::GetAtt:
+          - PublicSubnetRouteTable
+          - RouteTableId
+      DestinationCidrBlock: 0.0.0.0/0
+      GatewayId:
+        Fn::GetAtt:
+          - IGW
+          - InternetGatewayId
     DependsOn:
-      - AWSPrivateNetworkAWSVpcTransitGatewayAttachment45E6BBDA
+      - IGWAttach
     Metadata:
-      aws:cdk:path: CdkHybridArchitectureDemoStack/AWSPrivateNetwork/AWSVpcTGWDefaultRoute
-  AWSPrivateNetworkAWSVpcPrivateSubnetARTAssociation1D0C4F53:
+      aws:cdk:path: NatGatewayStack/PublicSubnetRouteTableRoute
+  PublicSubnetRTAssoc:
     Type: AWS::EC2::SubnetRouteTableAssociation
     Properties:
       RouteTableId:
         Fn::GetAtt:
-          - AWSPrivateNetworkAWSVpcCustomRT54EBF452
+          - PublicSubnetRouteTable
           - RouteTableId
       SubnetId:
-        Ref: AWSPrivateNetworkAWSVpcPrivateSubnetASubnetC2333EDC
+        Ref: PublicSubnet2F070567
     Metadata:
-      aws:cdk:path: CdkHybridArchitectureDemoStack/AWSPrivateNetwork/AWSVpcPrivateSubnetARTAssociation
-  AWSPrivateNetworkAWSVpcPrivateSubnetBRTAssociation2D0B469E:
-    Type: AWS::EC2::SubnetRouteTableAssociation
-    Properties:
-      RouteTableId:
-        Fn::GetAtt:
-          - AWSPrivateNetworkAWSVpcCustomRT54EBF452
-          - RouteTableId
-      SubnetId:
-        Ref: AWSPrivateNetworkAWSVpcPrivateSubnetBSubnet3881A3B2
-    Metadata:
-      aws:cdk:path: CdkHybridArchitectureDemoStack/AWSPrivateNetwork/AWSVpcPrivateSubnetBRTAssociation
-  AWSPrivateNetworkAWSVpcEC2SecurityGroupC40A969A:
-    Type: AWS::EC2::SecurityGroup
-    Properties:
-      GroupDescription: AWS private network default security group
-      GroupName: aws-vpc-ec2A-sg
-      SecurityGroupEgress:
-        - CidrIp: 0.0.0.0/0
-          Description: Allow all outbound traffic by default
-          IpProtocol: "-1"
-      SecurityGroupIngress:
-        - CidrIp: 0.0.0.0/0
-          Description: Allow SSH IPv4 IN
-          FromPort: 22
-          IpProtocol: tcp
-          ToPort: 22
-        - CidrIp: 192.168.8.0/21
-          Description: Allow ALL from ONPREM Networks
-          IpProtocol: "-1"
-        - CidrIp:
-            Fn::GetAtt:
-              - AWSPrivateNetworkAWSVpcE0F4E4E3
-              - CidrBlock
-          Description:
-            Fn::Join:
-              - ""
-              - - "from "
-                - Fn::GetAtt:
-                    - AWSPrivateNetworkAWSVpcE0F4E4E3
-                    - CidrBlock
-                - :443
-          FromPort: 443
-          IpProtocol: tcp
-          ToPort: 443
-      VpcId:
-        Ref: AWSPrivateNetworkAWSVpcE0F4E4E3
-    Metadata:
-      aws:cdk:path: CdkHybridArchitectureDemoStack/AWSPrivateNetwork/AWSVpcEC2SecurityGroup/Resource
-  AWSPrivateNetworkAWSVpcEC2SecurityGroupSelfReferenceRule68197218:
-    Type: AWS::EC2::SecurityGroupIngress
-    Properties:
-      IpProtocol: "-1"
-      GroupId:
-        Fn::GetAtt:
-          - AWSPrivateNetworkAWSVpcEC2SecurityGroupC40A969A
-          - GroupId
-      SourceSecurityGroupId:
-        Fn::GetAtt:
-          - AWSPrivateNetworkAWSVpcEC2SecurityGroupC40A969A
-          - GroupId
-    Metadata:
-      aws:cdk:path: CdkHybridArchitectureDemoStack/AWSPrivateNetwork/AWSVpcEC2SecurityGroupSelfReferenceRule
-  AWSPrivateNetworkAWSVpcEC2MessagesInterfaceEndpointFED86BC8:
-    Type: AWS::EC2::VPCEndpoint
-    Properties:
-      ServiceName: com.amazonaws.us-east-1.ec2messages
-      VpcId:
-        Ref: AWSPrivateNetworkAWSVpcE0F4E4E3
-      PrivateDnsEnabled: true
-      SecurityGroupIds:
-        - Fn::GetAtt:
-            - AWSPrivateNetworkAWSVpcEC2SecurityGroupC40A969A
-            - GroupId
-      SubnetIds: []
-      VpcEndpointType: Interface
-    Metadata:
-      aws:cdk:path: CdkHybridArchitectureDemoStack/AWSPrivateNetwork/AWSVpcEC2MessagesInterfaceEndpoint/Resource
-  AWSPrivateNetworkAWSVpcSSMMessagesInterfaceEndpoint9B83740B:
-    Type: AWS::EC2::VPCEndpoint
-    Properties:
-      ServiceName: com.amazonaws.us-east-1.ssmmessages
-      VpcId:
-        Ref: AWSPrivateNetworkAWSVpcE0F4E4E3
-      PrivateDnsEnabled: true
-      SecurityGroupIds:
-        - Fn::GetAtt:
-            - AWSPrivateNetworkAWSVpcEC2SecurityGroupC40A969A
-            - GroupId
-      SubnetIds: []
-      VpcEndpointType: Interface
-    Metadata:
-      aws:cdk:path: CdkHybridArchitectureDemoStack/AWSPrivateNetwork/AWSVpcSSMMessagesInterfaceEndpoint/Resource
-  AWSPrivateNetworkAWSVpcSSMInterfaceEndpointE85AB325:
-    Type: AWS::EC2::VPCEndpoint
-    Properties:
-      ServiceName: com.amazonaws.us-east-1.ssm
-      VpcId:
-        Ref: AWSPrivateNetworkAWSVpcE0F4E4E3
-      PrivateDnsEnabled: true
-      SecurityGroupIds:
-        - Fn::GetAtt:
-            - AWSPrivateNetworkAWSVpcEC2SecurityGroupC40A969A
-            - GroupId
-      SubnetIds: []
-      VpcEndpointType: Interface
-    Metadata:
-      aws:cdk:path: CdkHybridArchitectureDemoStack/AWSPrivateNetwork/AWSVpcSSMInterfaceEndpoint/Resource
-  AWSPrivateNetworkAWSVpcEC2RoleE08C7582:
+      aws:cdk:path: NatGatewayStack/PublicSubnetRTAssoc
+  EC2RoleF978FC1C:
     Type: AWS::IAM::Role
     Properties:
       AssumeRolePolicyDocument:
@@ -257,56 +202,57 @@ Resources:
                 Resource: "*"
             Version: "2012-10-17"
           PolicyName: root
-      RoleName: aws-vpc-ec2-iam-role
+      RoleName: nat-gateway-demo-ec2-iam-role
     Metadata:
-      aws:cdk:path: CdkHybridArchitectureDemoStack/AWSPrivateNetwork/AWSVpcEC2Role/Resource
-  AWSPrivateNetworkAWSVpcEC2InstanceProfileE272E475:
+      aws:cdk:path: NatGatewayStack/EC2Role/Resource
+  EC2InstanceProfile:
     Type: AWS::IAM::InstanceProfile
     Properties:
       Roles:
-        - Ref: AWSPrivateNetworkAWSVpcEC2RoleE08C7582
+        - Ref: EC2RoleF978FC1C
       Path: /
     Metadata:
-      aws:cdk:path: CdkHybridArchitectureDemoStack/AWSPrivateNetwork/AWSVpcEC2InstanceProfile
-  AWSPrivateNetworkAWSVpcEC2AInstanceProfile8B4C9E39:
-    Type: AWS::IAM::InstanceProfile
+      aws:cdk:path: NatGatewayStack/EC2InstanceProfile
+  EC2SecurityGroup:
+    Type: AWS::EC2::SecurityGroup
     Properties:
-      Roles: []
+      GroupDescription: AWS private network default security group
+      GroupName: nat-gateway-demo-ec2-sg
+      SecurityGroupIngress:
+        - CidrIp: 0.0.0.0/0
+          Description: Allow SSH IPv4 IN
+          FromPort: 22
+          IpProtocol: tcp
+          ToPort: 22
+      VpcId:
+        Ref: Vpc8378EB38
     Metadata:
-      aws:cdk:path: CdkHybridArchitectureDemoStack/AWSPrivateNetwork/AWSVpcEC2A/InstanceProfile
-  AWSPrivateNetworkAWSVpcEC2A51641361:
+      aws:cdk:path: NatGatewayStack/EC2SecurityGroup
+  EC2:
     Type: AWS::EC2::Instance
     Properties:
-      AvailabilityZone:
-        Fn::Select:
-          - 0
-          - Fn::GetAZs: ""
       IamInstanceProfile:
-        Ref: AWSPrivateNetworkAWSVpcEC2AInstanceProfile8B4C9E39
+        Ref: EC2InstanceProfile
       ImageId:
         Ref: SsmParameterValueawsserviceamiamazonlinuxlatestamznamihvmx8664gp2C96584B6F00A464EAD1953AFF4B05118Parameter
       InstanceType: t2.micro
       SecurityGroupIds:
         - Fn::GetAtt:
-            - AWSPrivateNetworkAWSVpcEC2SecurityGroupC40A969A
+            - EC2SecurityGroup
             - GroupId
       SubnetId:
-        Ref: AWSPrivateNetworkAWSVpcPrivateSubnetASubnetC2333EDC
+        Ref: PrivateSubnet70527EEF
       Tags:
         - Key: Name
-          Value: aws-vpc-ec2a
-      UserData:
-        Fn::Base64: "#!/bin/bash"
-    DependsOn:
-      - AWSPrivateNetworkAWSVpcEC2InstanceProfileE272E475
+          Value: nat-gateway-demo-ec2
     Metadata:
-      aws:cdk:path: CdkHybridArchitectureDemoStack/AWSPrivateNetwork/AWSVpcEC2A/Resource
+      aws:cdk:path: NatGatewayStack/EC2
   CDKMetadata:
     Type: AWS::CDK::Metadata
     Properties:
-      Analytics: v2:deflate64:H4sIAAAAAAAA/31PwWrDMAz9lt4dr+tYYcdSRsktJKXXorjKqjaRgy1TQsi/z02W5TDYSXpPeu9JG7191+sVPHxiLvekplL3hYC5q0idezQb3Z9ao/YVn7K9KkLJKE+0dLkNgkcoa3yiowP2JAcQfED3l9lJdL82yIt2sVusdt5bQyBkWRVogiPpDs6Gdlz+l0j5y6H3KmVBV4HBeP8nX1pLU2b84xem7AXYjCfM/aAIGt3ndnporvM4c7aiGodB5ehtcJM4AwcNxsBR8jMYVNbJ1fLLm35d64/VzRMlLrBQgzqf6jeB4tYxgQEAAA==
+      Analytics: v2:deflate64:H4sIAAAAAAAA/02PTwvCMAzFP4v3rv5DwaOIDC9SNvEqWY0Y3VppU8YY++7ObTpPL6+/l6RZyPVKziZQ+khfn1FOmaxTBv0U7dOlRr2Q9fmlxe5mzmon0pAZ5I8bq4NhdG0dA2MJ1RAd3JbbYfcCTRfdH9RHjvAfTmxgPEGW48+NC0a49d5qAiZrOow6OOIqdja8+m94BqOxEQSFrBP7ndfrFytnb5Rj04gEvQ1Od1SBgwLbO7qWATRCVXy3ZrqU85ncTB6eKHLBMBUok17fvgf9Y0ABAAA=
     Metadata:
-      aws:cdk:path: CdkHybridArchitectureDemoStack/CDKMetadata/Default
+      aws:cdk:path: NatGatewayStack/CDKMetadata/Default
 Parameters:
   SsmParameterValueawsserviceamiamazonlinuxlatestamznamihvmx8664gp2C96584B6F00A464EAD1953AFF4B05118Parameter:
     Type: AWS::SSM::Parameter::Value<AWS::EC2::Image::Id>

@@ -1,7 +1,7 @@
 import aws_cdk as core
 import aws_cdk.assertions as assertions
 
-from cdk_hybrid_architecture_demo.cdk_hybrid_architecture_demo_stack import CdkHybridArchitectureDemoStack
+from demo.cdk_hybrid_architecture_demo_stack import CdkHybridArchitectureDemoStack
 
 # example tests. To run these tests, uncomment this file along with the example
 # resource in cdk_hybrid_architecture_demo/cdk_hybrid_architecture_demo_stack.py

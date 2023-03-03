@@ -3,10 +3,10 @@ from aws_cdk import Stack
     
 from constructs import Construct
 
-from cdk_hybrid_architecture_demo.aws_network import AWSPrivateNetwork
-from cdk_hybrid_architecture_demo.onprem_network import OnPremNetwork
+from vpc_architecture_demos.site_to_site_vpn.aws_network import AWSPrivateNetwork
+from vpc_architecture_demos.site_to_site_vpn.onprem_network import OnPremNetwork
 
-class CdkHybridArchitectureDemoStack(Stack):
+class SiteToSiteVpnStack(Stack):
 
     def __init__(self, scope: Construct, construct_id: str, **kwargs) -> None:
         super().__init__(scope, construct_id, **kwargs)
