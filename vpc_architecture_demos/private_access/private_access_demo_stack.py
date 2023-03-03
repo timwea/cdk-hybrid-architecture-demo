@@ -72,7 +72,7 @@ class PrivateAccessDemoStack(Stack):
             )]
         )
         
-        # create the nat gateway for public subnet
+        # create the nat gateway for the public subnet
         self._nat_gateway = ec2.CfnNatGateway(
             scope=self,
             id="NatGateway",
@@ -84,7 +84,7 @@ class PrivateAccessDemoStack(Stack):
             )]
         )
         
-        # create route table for private subnet
+        # create the route table for the private subnet
         self._private_subnet_route_table = ec2.CfnRouteTable(
             scope=self,
             id="PrivateSubnetARouteTable",
@@ -105,7 +105,7 @@ class PrivateAccessDemoStack(Stack):
             destination_cidr_block='0.0.0.0/0'
         )
         
-        # associate the route table to the private subnet
+        # associate the route table with the private subnet
         self._private_subnet_route_table_assoc = ec2.CfnSubnetRouteTableAssociation(
             scope=self,
             id="PrivateSubnetRTAssoc",
@@ -135,7 +135,7 @@ class PrivateAccessDemoStack(Stack):
         )
         self._public_subnet_route_table_route.add_dependency(target=self._internet_gateway_attach)
         
-        # associate the route table to the public subnet
+        # associate the route table with the public subnet
         self._public_subnet_route_table_assoc = ec2.CfnSubnetRouteTableAssociation(
             scope=self,
             id="PublicSubnetRTAssoc",
@@ -143,16 +143,28 @@ class PrivateAccessDemoStack(Stack):
             route_table_id=self._public_subnet_route_table.attr_route_table_id
         )
         
-        # create the iam role for the ec2
+        # create a iam role for the ec2
         self._ec2_iam_role = iam.Role(
             scope=self,
             id="EC2Role",
             assumed_by=iam.ServicePrincipal("ec2.amazonaws.com"),
             path="/",
-            role_name="private-access-demo-ec2-iam-role"
+            role_name="private-access-demo-ec2-iam-role",
+            inline_policies={
+                "root": iam.PolicyDocument(
+                    statements=[
+                        # broad policy just for demo purposes
+                        iam.PolicyStatement(
+                            actions=["*"],
+                            resources=["*"],
+                            effect=iam.Effect.ALLOW
+                        )
+                    ]
+                )
+            }
         )
         
-        # create the instance profile for the ec2
+        # create the instance profile for ec2
         self._ec2_instance_profile = iam.CfnInstanceProfile(
             scope=self,
             id="EC2InstanceProfile",
@@ -178,7 +190,7 @@ class PrivateAccessDemoStack(Stack):
             ]
         )
         
-        # create ec2 instance in private subnet
+        # create ec2 instance in for the private subnet
         self._ec2_instance = ec2.CfnInstance(
             scope=self,
             id="EC2",
