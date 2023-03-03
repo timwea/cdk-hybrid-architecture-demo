@@ -143,73 +143,16 @@ class PrivateAccessDemoStack(Stack):
             route_table_id=self._public_subnet_route_table.attr_route_table_id
         )
         
+        # create the iam role for the ec2
         self._ec2_iam_role = iam.Role(
             scope=self,
             id="EC2Role",
             assumed_by=iam.ServicePrincipal("ec2.amazonaws.com"),
             path="/",
-            role_name="private-access-demo-ec2-iam-role",
-            inline_policies={
-                "root": iam.PolicyDocument(
-                    statements=[
-                        iam.PolicyStatement(
-                            actions=[
-                                "ssm:DescribeAssociation",
-                                "ssm:GetDeployablePatchSnapshotForInstance",
-                                "ssm:GetDocument",
-                                "ssm:DescribeDocument",
-                                "ssm:GetManifest",
-                                "ssm:GetParameter",
-                                "ssm:GetParameters",
-                                "ssm:ListAssociations",
-                                "ssm:ListInstanceAssociations",
-                                "ssm:PutInventory",
-                                "ssm:PutComplianceItems",
-                                "ssm:PutConfigurePackageResult",
-                                "ssm:UpdateAssociationStatus",
-                                "ssm:UpdateInstanceAssociationStatus",
-                                "ssm:UpdateInstanceInformation"
-                            ],
-                            resources=["*"],
-                            effect=iam.Effect.ALLOW
-                        ),
-                        iam.PolicyStatement(
-                            actions=[
-                                "ssmmessages:CreateControlChannel",
-                                "ssmmessages:CreateDataChannel",
-                                "ssmmessages:OpenControlChannel",
-                                "ssmmessages:OpenDataChannel",
-                            ],
-                            resources=["*"],
-                            effect=iam.Effect.ALLOW
-                        ),
-                        iam.PolicyStatement(
-                            actions=[
-                                "ec2messages:AcknowledgeMessage",
-                                "ec2messages:DeleteMessage",
-                                "ec2messages:FailMessage",
-                                "ec2messages:GetEndpoint",
-                                "ec2messages:GetMessages",
-                                "ec2messages:SendReply"
-                            ],
-                            resources=["*"],
-                            effect=iam.Effect.ALLOW
-                        ),
-                        iam.PolicyStatement(
-                            actions=["s3:*"],
-                            resources=["*"],
-                            effect=iam.Effect.ALLOW
-                        ),
-                        iam.PolicyStatement(
-                            actions=["sns:*"],
-                            resources=["*"],
-                            effect=iam.Effect.ALLOW
-                        )
-                    ]
-                )
-            }
+            role_name="private-access-demo-ec2-iam-role"
         )
         
+        # create the instance profile for the ec2
         self._ec2_instance_profile = iam.CfnInstanceProfile(
             scope=self,
             id="EC2InstanceProfile",
@@ -217,12 +160,12 @@ class PrivateAccessDemoStack(Stack):
             roles=[self._ec2_iam_role.role_name]
         )
         
-        # create security group for ec2
+        # create the security group for ec2
         self._ec2_security_group = ec2.CfnSecurityGroup(
             scope=self,
             id="EC2SecurityGroup",
             group_description="private access demo security group",
-            group_name="nat-gateway-demo-ec2-sg",
+            group_name="private-access-demo-ec2-sg",
             vpc_id=self._vpc.vpc_id,
             security_group_ingress=[
                 ec2.CfnSecurityGroup.IngressProperty(

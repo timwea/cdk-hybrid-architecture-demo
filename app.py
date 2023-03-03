@@ -20,7 +20,7 @@ app = cdk.App()
 
 PrivateAccessDemoStack(
     scope=app,
-    construct_id='NatGatewayStack',
+    construct_id='PrivateAccessDemoStack',
     stack_name="vpc-architecture-demos-nat-gateway",
     env=Environment(region='us-east-1')
 )
